@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Private Audio Downloader</title>
+  
+  <!-- Google Fonts Link for Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <style>
+    /* Basic Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* Background */
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #323232, #1a1a1a);
+      user-select: none;
+    }
+
+    /* Login Container */
+    .login-container {
+      width: 350px;
+      padding: 40px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    /* Heading */
+    .login-container h2 {
+      margin-bottom: 20px;
+      color: #333;
+      font-weight: 600;
+    }
+
+    /* Form Fields */
+    .login-container input[type="text"],
+    .login-container input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+      outline: none;
+
+    }
+
+    /* Button */
+    .login-container button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      background-color: #000000;
+      border: none;
+      border-radius: 4px;
+      color: white;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .login-container button:hover {
+      background-color: #303030;
+    }
+
+    /* Link */
+    .login-container a {
+      display: block;
+      margin-top: 15px;
+      color: #fdfdfd;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .login-container a:hover {
+      text-decoration: underline;
+    }
+
+    
+   
+
+      #notification-container {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999999999999999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.notification {
+  color: #ffffff;
+  padding: 15px 20px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: transform 0.4s ease, opacity 0.4s ease;
+  white-space: nowrap; /* Prevent text from wrapping */
+  max-width: 90vw; /* Prevent the notification from exceeding the viewport width */
+}
+
+.notification.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.notification i {
+ 
+  margin-right: 10px;
+}
+
+.notification.error {
+  background-color: #FF3B30;
+}
+
+.notification.success {
+  background-color: #28A745;
+}
+
+.notification.info {
+  background-color: #007BFF;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+span {
+    padding-right: 10px;
+}
+
+
+
+
+
+  
+  </style>
+</head>
+<body>
+    <script>
+      const ipcSend = window.api.ipcSend
+      const ipcOn = window.api.ipcOn
+      
+      ipcOn("showNotif", (message) => {
+         console.log("got notif ")
+         console.log(message)
+          showNotification(message[0],message[1])
+        })
+        ipcOn("allowBtn", (mode) => {
+          console.log("set allow")
+         document.getElementById("sub").disabled =  !mode
+        })
+      
+        function isEmptyOrSpaces(str){
+          console.log(str)
+          if (typeof(str) ==="string") {
+            return str === null || str.match(/^ *$/) !== null;
+          }
+          else{
+            return false
+          }
+   
+}
+        function foo() {
+         
+            const cookier = document.getElementById("cookie")
+            const audio = document.getElementById("audio")
+            const place = document.getElementById("place")
+       
+            if (isEmptyOrSpaces(cookie.value)||isEmptyOrSpaces(audio.value)||isEmptyOrSpaces(place.value)) {
+              showNotification("At least one of the fields is not filled in.","error")
+             
+            }
+            else {
+              showNotification("Processing...","info")
+              ipcSend("download", {cookie:cookie.value,id:audio.value,place:place.value})
+            }
+            
+            
+        }
+
+        
+
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notification-container');
+
+            const notification = document.createElement('div');
+            notification.classList.add('notification', type);
+
+            const icon = document.createElement('i');
+            if (type === 'success') {
+                icon.className = 'fas fa-check';
+            } else if (type === 'info' ){
+                icon.className = 'fa-solid fa-info';
+            } else {
+                icon.className = 'fa-solid fa-exclamation';
+            }
+            notification.appendChild(icon);
+
+            const text = document.createElement('span');
+            text.textContent = message;
+            notification.appendChild(text);
+
+            const closeButton = document.createElement('button');
+            closeButton.classList.add('close-btn');
+            closeButton.innerHTML = '&times;';
+            closeButton.onclick = () => {
+                notification.classList.remove('show');
+                setTimeout(() => container.removeChild(notification), 400);
+            };
+            notification.appendChild(closeButton);
+
+            container.appendChild(notification);
+
+            setTimeout(() => notification.classList.add('show'), 10);
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => container.removeChild(notification), 400);
+            }, 5000);
+        }
+    </script>
+    <div id="notification-container"></div>
+<div class="login-container">
+    <h2>Audio Downloader</h2>
+    <form novalidate >
+      <input id="cookie" type="text" placeholder="Cookie" required>
+      <input id="audio" type="text" placeholder="Audio id" required>
+      <input id="place" type="text" placeholder="Place id where it can be used" required>
+      <button onclick="foo()" id="sub" type="button">Submit</button>
+    </form>
+  </div>
+</body>
+</html>
